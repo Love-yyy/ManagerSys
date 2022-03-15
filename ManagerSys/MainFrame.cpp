@@ -35,6 +35,7 @@ END_MESSAGE_MAP()
 static UINT indicators[] =
 {
 	IDS_CURRENT_USER,
+	IDS_CURRENT_VERSION,
 	IDS_CURRENT_TIME
 };
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -46,7 +47,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_StatuBar.Create(this);
 	m_StatuBar.SetIndicators(indicators, sizeof(indicators) / sizeof(UINT));
 	m_StatuBar.SetPaneInfo(0, IDS_CURRENT_USER, SBPS_STRETCH, 0);
-	m_StatuBar.SetPaneInfo(1, IDS_CURRENT_TIME, SBPS_NORMAL, 160);
+	m_StatuBar.SetPaneInfo(1, IDS_CURRENT_VERSION, SBPS_NORMAL, 160);
+	m_StatuBar.SetPaneInfo(2, IDS_CURRENT_TIME, SBPS_NORMAL, 160);
 
 	CString CurrentUser;
 	CurrentUser.Format(L"当前用户: %s", m_pLoginDlg->m_User);
@@ -107,6 +109,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	if (m_pLoginDlg->m_User != L"admin")
 	{
+		//非管理员用户无法点击这些按钮.
+		m_StoreDlg.GetDlgItem(IDC_BUTTON4)->EnableWindow(0);
 		m_StoreDlg.GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
 		m_StoreDlg.GetDlgItem(IDC_BUTTON2)->EnableWindow(0);
 
@@ -117,13 +121,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_PurchaseDlg.GetDlgItem(IDC_BUTTON2)->EnableWindow(0);
 	}
 
-
 	m_pForegroundWnd = &m_StoreDlg;
 	//显示第一个界面
 	m_pForegroundWnd->MoveWindow(m_SubWndRect);
 	m_pForegroundWnd->ShowWindow(SW_SHOW);
 	//
-	
 	SetTimer(10086, 1000,NULL);
 	return 0;
 }
@@ -140,7 +142,7 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	CTime time = CTime::GetTickCount();
 	CString Text = time.Format(L"[%Y-%m-%d %H:%M:%S]");
-	m_StatuBar.SetPaneText(1, Text);
+	m_StatuBar.SetPaneText(2, Text);
 	CFrameWnd::OnTimer(nIDEvent);
 }
 
@@ -184,7 +186,7 @@ void CMainFrame::OnClose()
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	if (IDYES == MessageBox(L"确定要退出系统吗?", L"Tips", MB_YESNO | MB_ICONQUESTION))
 	{
-		
+		//
 		return CFrameWnd::OnClose();
 	}
 }

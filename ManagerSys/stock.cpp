@@ -42,6 +42,48 @@ void WriteStockData(const char*szFileName, ListContext*pStockList)
 	return ;
 }
 
+//从txt中导入记录,返回总记录条数和成功数量.
+void ImportFromFile(ListContext*pStockList, const char*szFileName,int*pTotal,int*pSuccess)
+{
+	*pTotal = 0;
+	*pSuccess = 0;
+	FILE*fp = fopen(szFileName, "r");
+	if (fp)
+	{
+		//
+		while (true)
+		{
+			Goods goods = { 0 };
+			//返回值: 整型，成功返回读入的参数的个数
+			int nScanf = fscanf(fp, "%d%s%s%u%lf%lf%lf%lf", &goods.nID, goods.szName, goods.szType, &goods.nUnit,
+				&goods.Purchaseprice, &goods.Sellingprice, &goods.Stock, &goods.Sell);
+			//
+			if (nScanf != 8)
+				break;
+			(*pTotal)++;
+			//查找是否有重复的编号.
+			Node*pNode = NULL;
+			for (pNode = pStockList->Head.next; pNode != &pStockList->Head; pNode = pNode->next)
+			{
+				if (((Goods*)pNode)->nID == goods.nID)
+					break;
+			}
+			//
+			if (pNode == &pStockList->Head)
+			{
+				//没有找到重复编号.
+				(*pSuccess)++;
+				Goods* pGoods = (Goods*)malloc(sizeof(Goods));
+				memcpy(pGoods, &goods, sizeof(Goods));
+				//
+				insertback(pStockList, (Node*)pGoods);
+			}
+		}
+		fclose(fp);
+	}
+}
+
+
 //typedef int(*cmpfunc)(Node* it, Node* target);
 
 int CompareById(Node*it, Node*target)

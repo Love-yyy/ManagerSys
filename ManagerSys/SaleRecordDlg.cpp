@@ -201,7 +201,7 @@ void CSaleRecordDlg::OnEnChangeEdit1()
 
 void CSaleRecordDlg::OnBnClickedButton2()
 {
-	if (IDYES != MessageBox(L"确定要删除选中记录吗?(删除后不可恢复)", L"Warning", MB_YESNO | MB_ICONWARNING))
+	if (IDYES != MessageBox(L"确定删除该天记录吗?(删除后不可恢复)", L"Warning", MB_YESNO | MB_ICONWARNING))
 		return;
 	ListContext*pList = m_pCurRecord->m_pRecordList;
 	//删除当天的记录
@@ -218,7 +218,7 @@ void CSaleRecordDlg::OnBnClickedButton2()
 void CSaleRecordDlg::OnBnClickedButton1()
 {
 	POSITION pos = m_SaleRecordList.GetFirstSelectedItemPosition();
-	if (pos == NULL || IDYES != MessageBox(L"确定删除该天记录吗?(删除后不可恢复)", L"Warning", MB_YESNO | MB_ICONWARNING))
+	if (pos == NULL || IDYES != MessageBox(L"确定要删除选中记录吗?(删除后不可恢复)", L"Warning", MB_YESNO | MB_ICONWARNING))
 		return;
 
 	while (pos)

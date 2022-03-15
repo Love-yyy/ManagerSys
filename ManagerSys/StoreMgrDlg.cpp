@@ -49,6 +49,7 @@ BEGIN_MESSAGE_MAP(CStoreMgrDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_EDIT1, &CStoreMgrDlg::OnEnChangeEdit1)
 	ON_COMMAND(ID_OPERATION_32776, &CStoreMgrDlg::OnOperation32776)
 	ON_COMMAND(ID_OPERATION_32777, &CStoreMgrDlg::OnOperation32777)
+	ON_BN_CLICKED(IDC_BUTTON4, &CStoreMgrDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()
 
 
@@ -378,4 +379,22 @@ void CStoreMgrDlg::OnOperation32777()
 		}
 	}
 	
+}
+
+
+void CStoreMgrDlg::OnBnClickedButton4()
+{
+	CFileDialog FileDlg(TRUE, L"*.txt",L"",NULL, L"文本文档(*.txt)|*.txt", this);
+
+	if (IDOK == FileDlg.DoModal())
+	{
+		int nTotal = 0, nSuccess = 0;
+		CString FileName = FileDlg.GetPathName();
+		ImportFromFile(m_pStockList, CW2A(FileName), &nTotal, &nSuccess);
+		//
+		CString Text;
+		Text.Format(L"读取完毕\r\n共找到:%d 条记录\r\n添加成功:%d 条记录\r\n", nTotal, nSuccess);
+		MessageBox(Text);
+		UpdateStockListView();
+	}
 }

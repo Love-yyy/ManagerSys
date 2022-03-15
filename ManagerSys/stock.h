@@ -18,10 +18,12 @@ typedef struct _Goods
 
 }Goods;
 
+
 //
 ListContext* ReadStockData(const char*szFileName);
 void WriteStockData(const char*szFileName, ListContext*pStockList);
-
+//从txt中导入记录,返回总记录条数和成功数量.
+void ImportFromFile(ListContext*pStockList, const char*szFileName, int*pTotal, int*pSuccess);
 //排序函数compare函数
 int CompareById(Node*it, Node*target);
 int CompareByName(Node*it, Node*target);
