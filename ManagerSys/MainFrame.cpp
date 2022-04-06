@@ -6,6 +6,7 @@
 #include "PurchaseDlg.h"
 #include "LoginDlg.h"
 #include "AboutDlg.h"
+#include "TendencyDlg.h"
 
 CMainFrame::CMainFrame(CLoginDlg*pLoginDlg)
 {
@@ -29,6 +30,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_CLOSE()
 	ON_COMMAND(ID_OPERATION_32777, &CMainFrame::OnOperation32777)
 	ON_COMMAND(ID_ABOUT_SYS,OnAbout)
+	ON_COMMAND(ID_TENDENCY, OnTendency)
 END_MESSAGE_MAP()
 
 
@@ -71,7 +73,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	VERIFY(m_ToolBar.SetButtonText(1, L"库存管理"));
 	VERIFY(m_ToolBar.SetButtonText(2, L"销售记录"));
 	VERIFY(m_ToolBar.SetButtonText(3, L"进货记录"));
-	VERIFY(m_ToolBar.SetButtonText(4, L"关于系统"));
+	VERIFY(m_ToolBar.SetButtonText(4, L"销售趋势"));
+	VERIFY(m_ToolBar.SetButtonText(5, L"关于系统"));
 
 	m_ImageList.Create(32, 32, ILC_COLOR32 | ILC_MASK, 0, 0);
 	//加载工具栏图标.
@@ -79,13 +82,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_Icons[1] = LoadIcon(GetModuleHandleA(NULL), MAKEINTRESOURCE(IDI_ICON5));
 	m_Icons[2] = LoadIcon(GetModuleHandleA(NULL), MAKEINTRESOURCE(IDI_ICON6));
 	m_Icons[3] = LoadIcon(GetModuleHandleA(NULL), MAKEINTRESOURCE(IDI_ICON7));
-	m_Icons[4] = LoadIcon(GetModuleHandleA(NULL), MAKEINTRESOURCE(IDI_ICON4));
+	m_Icons[4] = LoadIcon(GetModuleHandleA(NULL), MAKEINTRESOURCE(IDI_ICON8));
+	m_Icons[5] = LoadIcon(GetModuleHandleA(NULL), MAKEINTRESOURCE(IDI_ICON4));
 
 	m_ImageList.Add(m_Icons[0]);
 	m_ImageList.Add(m_Icons[1]);
 	m_ImageList.Add(m_Icons[2]);
 	m_ImageList.Add(m_Icons[3]);
 	m_ImageList.Add(m_Icons[4]);
+	m_ImageList.Add(m_Icons[5]);
 	
 	//
 	m_ToolBar.GetToolBarCtrl().SetImageList(&m_ImageList);
@@ -94,7 +99,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	GetClientRect(m_SubWndRect);
 
 	m_SubWndRect.top += 40;
-	m_SubWndRect.bottom -= 23;
+	m_SubWndRect.bottom -= 20;
 
 	m_StoreDlg.Create(IDD_DIALOG1, this);
 	m_StoreDlg.SetParent(this);
@@ -113,6 +118,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_StoreDlg.GetDlgItem(IDC_BUTTON4)->EnableWindow(0);
 		m_StoreDlg.GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
 		m_StoreDlg.GetDlgItem(IDC_BUTTON2)->EnableWindow(0);
+		m_StoreDlg.GetDlgItem(IDC_BUTTON5)->EnableWindow(0);
 
 		m_SaleDlg.GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
 		m_SaleDlg.GetDlgItem(IDC_BUTTON2)->EnableWindow(0);
@@ -192,8 +198,6 @@ void CMainFrame::OnClose()
 }
 
 
-
-
 void CMainFrame::OnOperation32777()
 {
 	if (m_pLoginDlg->m_User != L"admin")
@@ -202,9 +206,14 @@ void CMainFrame::OnOperation32777()
 	}
 }
 
-
 void CMainFrame::OnAbout()
 {
 	CAboutDlg dlg;
+	dlg.DoModal();
+}
+
+void CMainFrame::OnTendency()
+{
+	CTendencyDlg dlg(m_StoreDlg.m_pStockList,m_SaleDlg.m_pSaleRecords);
 	dlg.DoModal();
 }

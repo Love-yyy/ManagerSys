@@ -6,6 +6,7 @@ typedef struct Node
 {
 	struct Node*prev;
 	struct Node*next;
+
 }Node, *pNode;
 
 typedef struct ListContext
@@ -27,5 +28,6 @@ void insertfront(pListContext plist, Node*pNewNode);
 void insertback(pListContext plist, Node*pNewNode);
 void delnode(pListContext plist, Node*pNode);
 void sort(pListContext plist, cmpfunc cmp,int ascending);
-int search(pListContext plist, cmpfunc compare, void* target, docallback callback);
+Node* search(pListContext plist, Node*pStart, cmpfunc compare, void* target);
+
 #endif

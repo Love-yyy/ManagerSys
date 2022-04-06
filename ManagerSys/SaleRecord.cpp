@@ -93,7 +93,7 @@ void AddRecord(const char*szDate, ListContext*pSaleRecords,Record*pRecord,const 
 	insertback(pSaleRecord->m_pRecordList, (Node*)pNewRecord);
 }
 
-
+//比较 回调函数
 int CompareByID2(Node*it, Node*target)
 {
 	Record*pIt = (Record*)it;

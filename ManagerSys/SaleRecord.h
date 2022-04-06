@@ -2,7 +2,7 @@
 #define _SALE_RECORD_H
 #include "list.h"
 
-typedef struct _SaleRecords
+typedef struct
 {
 	Node node;
 
@@ -10,7 +10,7 @@ typedef struct _SaleRecords
 	ListContext	*m_pRecordList;	//当天记录.
 }SaleRecords;
 
-typedef struct _Record
+typedef struct
 {
 	Node node;
 
@@ -21,13 +21,15 @@ typedef struct _Record
 	
 	double	Purchaseingprice;	//进价
 	double  Sellingprice;		//售价
+
+	double	m_Rate;				//折扣,只在销售记录里面有效.
+	
 	double	Sell;				//出售数量.,购买数量.
 	char	szTime[32];			//时间.
 
 	char	szComment[128];		//备注.
 	//
 }Record;
-
 
 
 void WriteRecord(const char*szFileName, ListContext*pRecordList);

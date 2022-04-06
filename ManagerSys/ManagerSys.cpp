@@ -79,7 +79,7 @@ BOOL CManagerSysApp::InitInstance()
 	WndRect.left = 440;
 	WndRect.top = 200;
 	WndRect.right = 440+ 1100;
-	WndRect.bottom = 200 +  740;
+	WndRect.bottom = 200 +  730;
 	CMainFrame*pMainFrame = new CMainFrame(pLoginDlg);
 	m_pMainWnd = pMainFrame;
 	((CMainFrame*)m_pMainWnd)->Create(NULL, L"果蔬管理系统", WS_DLGFRAME | WS_CAPTION |WS_SYSMENU |WS_MINIMIZEBOX|WS_OVERLAPPED,WndRect);

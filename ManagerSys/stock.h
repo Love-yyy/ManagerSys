@@ -3,7 +3,7 @@
 
 #include "list.h"
 
-typedef struct _Goods
+typedef struct
 {
 	Node node;
 

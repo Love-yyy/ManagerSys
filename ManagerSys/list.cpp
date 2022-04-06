@@ -179,18 +179,14 @@ void sort(pListContext plist, cmpfunc cmp, int ascending)
 }
 
 
-int search(pListContext plist, cmpfunc compare, void* target, docallback callback)
+Node* search(pListContext plist, Node*pStart, cmpfunc compare, void* target)
 {
-	//
-	int nResult = 0;
-	for (Node*pNode = plist->Head.next; pNode != &plist->Head; pNode = pNode->next)
+	for (Node*pNode = pStart; pNode != &plist->Head; pNode = pNode->next)
 	{
 		if (compare((Node*)target, pNode) == 0)
 		{
-			nResult++;
-			if (callback)
-				callback(plist, pNode);
+			return pNode;
 		}
 	}
-	return nResult;
+	return NULL;
 }

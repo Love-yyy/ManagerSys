@@ -42,4 +42,5 @@ public:
 	afx_msg void OnOperation32776();
 	afx_msg void OnOperation32777();
 	afx_msg void OnBnClickedButton4();
+	afx_msg void OnBnClickedButton5();
 };

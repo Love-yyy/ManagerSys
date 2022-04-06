@@ -2,7 +2,7 @@
 #include "afxwin.h"
 
 #include "stock.h"
-
+#include "resource.h"
 // CAddGoodsDlg ¶Ô»°¿ò
 
 class CAddGoodsDlg : public CDialogEx

@@ -18,6 +18,9 @@ BOOL CPurcsDlg::OnInitDialog()
 
 	// TODO:  在此添加额外的初始化
 	SetWindowText(L"进货");
+	//隐藏打折窗口
+	GetDlgItem(IDC_EDIT10)->ShowWindow(SW_HIDE);
+	m_Discount.ShowWindow(SW_HIDE);
 	//
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常:  OCX 属性页应返回 FALSE

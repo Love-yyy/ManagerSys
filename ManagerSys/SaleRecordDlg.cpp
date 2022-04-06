@@ -6,6 +6,7 @@
 #include "SaleRecordDlg.h"
 #include "afxdialogex.h"
 #include "SortDlg.h"
+#include "StatisticsDlg.h"
 
 // CSaleRecordDlg 对话框
 
@@ -54,6 +55,7 @@ BEGIN_MESSAGE_MAP(CSaleRecordDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON2, &CSaleRecordDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSaleRecordDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON3, &CSaleRecordDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CSaleRecordDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()
 
 
@@ -87,10 +89,12 @@ BOOL CSaleRecordDlg::OnInitDialog()
 	m_SaleRecordList.InsertColumn(4, L"数量", LVCFMT_LEFT, 75);
 	m_SaleRecordList.InsertColumn(5, L"进价", LVCFMT_LEFT, 80);
 	m_SaleRecordList.InsertColumn(6, L"售价", LVCFMT_LEFT, 80);
-	m_SaleRecordList.InsertColumn(7, L"利润", LVCFMT_LEFT, 100);
-	m_SaleRecordList.InsertColumn(8, L"时间", LVCFMT_LEFT, 100);
-	m_SaleRecordList.InsertColumn(9, L"备注", LVCFMT_LEFT, 100);
-	m_SaleRecordList.SetExtendedStyle(m_SaleRecordList.GetExStyle() | LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT);
+	m_SaleRecordList.InsertColumn(7, L"折扣", LVCFMT_LEFT, 80);
+	m_SaleRecordList.InsertColumn(8, L"利润", LVCFMT_LEFT, 100);
+	m_SaleRecordList.InsertColumn(9, L"时间", LVCFMT_LEFT, 100);
+	m_SaleRecordList.InsertColumn(10, L"备注", LVCFMT_LEFT, 100);
+
+	m_SaleRecordList.SetExtendedStyle((m_SaleRecordList.GetExStyle() | LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT) & (~LVS_EX_CHECKBOXES));
 
 	//加载列表.
 	CTime time;
@@ -127,6 +131,7 @@ void CSaleRecordDlg::OnOK()
 void CSaleRecordDlg::InsertRecord(Record&record)
 {
 	CString Text;
+	double m;
 	Text.Format(L"%d", record.ID);
 
 	m_SaleRecordList.InsertItem(0, Text);
@@ -142,14 +147,17 @@ void CSaleRecordDlg::InsertRecord(Record&record)
 	//售价
 	Text.Format(L"%.2lf 元", record.Sellingprice);
 	m_SaleRecordList.SetItemText(0, 6, Text);
-	//利润
-	double m = record.Sell * (record.Sellingprice - record.Purchaseingprice);
-	Text.Format(L"%.2lf 元", m);
+	//折扣
+	Text.Format(L"%.2lf", record.m_Rate);
 	m_SaleRecordList.SetItemText(0, 7, Text);
-	//
-	m_SaleRecordList.SetItemText(0, 8, CA2W(record.szTime));
-
-	m_SaleRecordList.SetItemText(0, 9, CA2W(record.szComment));
+	//利润
+	m = record.Sell * (record.Sellingprice*record.m_Rate - record.Purchaseingprice);
+	Text.Format(L"%.2lf 元", m);
+	m_SaleRecordList.SetItemText(0, 8, Text);
+	//时间
+	m_SaleRecordList.SetItemText(0, 9, CA2W(record.szTime));
+	//备注
+	m_SaleRecordList.SetItemText(0, 10, CA2W(record.szComment));
 }
 void CSaleRecordDlg::UpdateSaleRecordListView()
 {
@@ -226,14 +234,14 @@ void CSaleRecordDlg::OnBnClickedButton1()
 		int idx = m_SaleRecordList.GetNextSelectedItem(pos);
 		//emmmmm将就一下,链表太慢了.
 		ListContext*pList = m_pCurRecord->m_pRecordList;
-		for (Node*p = pList->Head.next; p != &pList->Head; p = p->next)
+		Record Target;
+		strcpy(Target.szTime, CW2A(m_SaleRecordList.GetItemText(idx, 9)));
+
+		//
+		Record*pRecord = (Record*)search(pList, pList->Head.next, CompareByTime, &Target);
+		if (pRecord)
 		{
-			Record*pRecord = (Record*)p;
-			if (!strcmp(pRecord->szTime, CW2A(m_SaleRecordList.GetItemText(idx, 8))))
-			{
-				delnode(pList, p);
-				break;
-			}
+			delnode(pList, (Node*)pRecord);
 		}
 	}
 	//刷新显示.
@@ -279,4 +287,13 @@ void CSaleRecordDlg::OnBnClickedButton3()
 		}
 		UpdateSaleRecordListView();
 	}
+}
+
+
+void CSaleRecordDlg::OnBnClickedButton4()
+{
+	CString Today = CA2W(m_pCurRecord->szDate).m_szBuffer;
+	CStatisticsDlg dlg(m_pCurRecord, Today);
+
+	dlg.DoModal();
 }

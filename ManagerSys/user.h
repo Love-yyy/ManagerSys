@@ -2,7 +2,7 @@
 #define _USER_H
 #include "list.h"
 
-typedef struct _UserData
+typedef struct
 {
 	Node node;
 	char szUserName[128];

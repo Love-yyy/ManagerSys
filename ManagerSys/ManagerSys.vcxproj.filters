@@ -78,6 +78,15 @@
     <ClInclude Include="AboutDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="StatisticsDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ChangeGoodsDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TendencyDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ManagerSys.cpp">
@@ -134,6 +143,15 @@
     <ClCompile Include="AboutDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="StatisticsDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ChangeGoodsDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TendencyDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ManagerSys.rc">
@@ -186,6 +204,12 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="res\records2.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\icon8.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\tendency.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

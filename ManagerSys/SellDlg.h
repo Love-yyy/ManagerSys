@@ -3,6 +3,7 @@
 #include"SaleRecord.h"
 #include"stock.h"
 #include "resource.h"
+#include "afxwin.h"
 // CSellDlg ¶Ô»°¿ò
 
 class CSellDlg : public CDialogEx
@@ -31,4 +32,8 @@ public:
 	virtual afx_msg void OnEnChangeEdit4();
 	virtual void OnOK();
 	CString m_Comment;
+	CButton m_Discount;
+	CString m_Rate;
+	afx_msg void OnBnClickedCheck1();
+	afx_msg void OnEnChangeEdit10();
 };

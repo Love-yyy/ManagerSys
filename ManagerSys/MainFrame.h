@@ -4,7 +4,7 @@
 #include "SaleRecordDlg.h"
 #include "PurchaseDlg.h"
 
-#define ICON_COUNT	5
+#define ICON_COUNT	6
 
 class CLoginDlg;
 class CMainFrame :
@@ -39,6 +39,7 @@ public:
 	void OnPurchaseMgr();
 	void OnStoreMgr();
 	void OnAbout();
+	void OnTendency();
 
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);

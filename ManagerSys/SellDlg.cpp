@@ -16,6 +16,7 @@ CSellDlg::CSellDlg(Goods&goods,CWnd* pParent /*=NULL*/)
 	m_goods(goods)
 	, m_SellCount(L"")
 	, m_Comment(_T(""))
+	, m_Rate(_T("1.0"))
 {
 
 }
@@ -29,11 +30,15 @@ void CSellDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_EDIT4, m_SellCount);
 	DDX_Text(pDX, IDC_EDIT6, m_Comment);
+	DDX_Control(pDX, IDC_CHECK1, m_Discount);
+	DDX_Text(pDX, IDC_EDIT10, m_Rate);
 }
 
 
 BEGIN_MESSAGE_MAP(CSellDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_EDIT4, &CSellDlg::OnEnChangeEdit4)
+	ON_BN_CLICKED(IDC_CHECK1, &CSellDlg::OnBnClickedCheck1)
+	ON_EN_CHANGE(IDC_EDIT10, &CSellDlg::OnEnChangeEdit10)
 END_MESSAGE_MAP()
 
 
@@ -60,7 +65,10 @@ BOOL CSellDlg::OnInitDialog()
 	//进价
 	Text.Format(L"%.2lf 元", m_goods.Purchaseprice);
 	GetDlgItem(IDC_EDIT9)->SetWindowTextW(Text);
-	return TRUE;  // return TRUE unless you set the focus to a control
+
+
+	GetDlgItem(IDC_EDIT4)->SetFocus();
+	return FALSE;  // return TRUE unless you set the focus to a control
 	// 异常:  OCX 属性页应返回 FALSE
 }
 
@@ -68,8 +76,11 @@ BOOL CSellDlg::OnInitDialog()
 void CSellDlg::OnEnChangeEdit4()
 {
 	UpdateData();
+	if (!m_Discount.GetCheck())
+		m_Rate = L"1.0";
+
 	CString Text;
-	double Total = atof(CW2A(m_SellCount)) * m_goods.Sellingprice;
+	double Total = atof(CW2A(m_SellCount)) * m_goods.Sellingprice * atof(CW2A(m_Rate));
 	Text.Format(L"%.2lf 元", Total);
 	GetDlgItem(IDC_EDIT7)->SetWindowTextW(Text);
 }
@@ -88,4 +99,21 @@ void CSellDlg::OnOK()
 	m_goods.Stock -= atof(CW2A(m_SellCount));
 	m_goods.Sell += atof(CW2A(m_SellCount));
 	CDialogEx::OnOK();
+}
+
+
+void CSellDlg::OnBnClickedCheck1()
+{
+	GetDlgItem(IDC_EDIT10)->EnableWindow(m_Discount.GetCheck());
+}
+
+
+void CSellDlg::OnEnChangeEdit10()
+{
+	UpdateData();
+	//
+	CString Text;
+	double Total = atof(CW2A(m_SellCount)) * m_goods.Sellingprice * atof(CW2A(m_Rate));
+	Text.Format(L"%.2lf 元", Total);
+	GetDlgItem(IDC_EDIT7)->SetWindowTextW(Text);
 }

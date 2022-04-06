@@ -90,7 +90,7 @@ BOOL CPurchaseDlg::OnInitDialog()
 
 	m_PurchaseList.InsertColumn(9, L"备注", LVCFMT_LEFT, 100);
 
-	m_PurchaseList.SetExtendedStyle(m_PurchaseList.GetExStyle() | LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT);
+	m_PurchaseList.SetExtendedStyle((~LVS_EX_CHECKBOXES)&(m_PurchaseList.GetExStyle() | LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT));
 
 	//加载列表.
 	CTime time;
@@ -117,14 +117,13 @@ void CPurchaseDlg::OnBnClickedButton1()
 		int idx = m_PurchaseList.GetNextSelectedItem(pos);
 		//emmmmm将就一下,链表太慢了.
 		ListContext*pList = m_pCurRecord->m_pRecordList;
-		for (Node*p = pList->Head.next; p != &pList->Head; p = p->next)
+		Record Target;
+		strcpy(Target.szTime, CW2A(m_PurchaseList.GetItemText(idx, 8)));
+
+		Record*pRecord = (Record*)search(pList, pList->Head.next, CompareByTime, &Target);
+		if (pRecord)
 		{
-			Record*pRecord = (Record*)p;
-			if (!strcmp(pRecord->szTime, CW2A(m_PurchaseList.GetItemText(idx, 8))))
-			{
-				delnode(pList, p);
-				break;
-			}
+			delnode(pList, (Node*)pRecord);
 		}
 	}
 	//刷新显示.
