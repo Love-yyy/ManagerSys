@@ -90,12 +90,16 @@ void CUserMgrDlg::OnBnClickedOk4()
 		return;
 
 	Node*pIt = NULL;
+
+	//UserData*pUser = search(m_pUserData, m_pUserData->Head.next, Compare,)
 	for (pIt = m_pUserData->Head.next; pIt != &m_pUserData->Head; pIt = pIt->next)
 	{
 		UserData*pUser = (UserData*)pIt;
 		if (!strcmp(pUser->szUserName, CW2A(m_UserName)))
 			break;
 	}
+
+
 	if (pIt != &m_pUserData->Head)
 	{
 		MessageBox(L"该用户已存在", L"Error", MB_OK | MB_ICONASTERISK);

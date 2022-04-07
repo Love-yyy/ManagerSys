@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "list.h"
-#include "LoginDlg.h"
+#include "user.h"
 #include "stdio.h"
 
 //读取用户账号密码信息
@@ -15,6 +15,7 @@ ListContext* ReadUserData(const char*szFileName)
 	while (1)
 	{
 		UserData Temp;
+		//fread返回读取成功的元素个数
 		int nRead = fread(Temp.szUserName, sizeof(UserData) - sizeof(Node), 1, fp);
 		if (nRead <= 0)
 			break;

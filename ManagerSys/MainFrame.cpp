@@ -11,7 +11,6 @@
 CMainFrame::CMainFrame(CLoginDlg*pLoginDlg)
 {
 	m_pLoginDlg = pLoginDlg;
-
 }
 
 
@@ -141,7 +140,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	2.库存管理 
 	3.销售记录
 	4.进货记录
-
 */
 void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 {
@@ -192,7 +190,6 @@ void CMainFrame::OnClose()
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	if (IDYES == MessageBox(L"确定要退出系统吗?", L"Tips", MB_YESNO | MB_ICONQUESTION))
 	{
-		//
 		return CFrameWnd::OnClose();
 	}
 }

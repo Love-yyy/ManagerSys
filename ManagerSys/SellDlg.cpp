@@ -39,6 +39,7 @@ BEGIN_MESSAGE_MAP(CSellDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_EDIT4, &CSellDlg::OnEnChangeEdit4)
 	ON_BN_CLICKED(IDC_CHECK1, &CSellDlg::OnBnClickedCheck1)
 	ON_EN_CHANGE(IDC_EDIT10, &CSellDlg::OnEnChangeEdit10)
+	ON_BN_CLICKED(IDCANCEL, &CSellDlg::OnBnClickedCancel)
 END_MESSAGE_MAP()
 
 
@@ -116,4 +117,11 @@ void CSellDlg::OnEnChangeEdit10()
 	double Total = atof(CW2A(m_SellCount)) * m_goods.Sellingprice * atof(CW2A(m_Rate));
 	Text.Format(L"%.2lf 元", Total);
 	GetDlgItem(IDC_EDIT7)->SetWindowTextW(Text);
+}
+
+
+void CSellDlg::OnBnClickedCancel()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	CDialogEx::OnCancel();
 }

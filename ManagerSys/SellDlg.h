@@ -36,4 +36,5 @@ public:
 	CString m_Rate;
 	afx_msg void OnBnClickedCheck1();
 	afx_msg void OnEnChangeEdit10();
+	afx_msg void OnBnClickedCancel();
 };

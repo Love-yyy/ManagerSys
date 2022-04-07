@@ -289,7 +289,7 @@ void CStoreMgrDlg::OnEnChangeEdit1()
 	UpdateStockListView();
 }
 
-
+//售出
 void CStoreMgrDlg::OnOperation32776()
 {
 	POSITION pos = m_List.GetFirstSelectedItemPosition();
@@ -306,32 +306,34 @@ void CStoreMgrDlg::OnOperation32776()
 		{
 			Goods*pGoods = (Goods*)p;
 			CSellDlg dlg(*pGoods);
-			dlg.DoModal();
-			//销售记录信息.
-			Record record = { 0 };
-			record.ID = pGoods->nID;
-			strcpy(record.szName, pGoods->szName);
-			strcpy(record.szType, pGoods->szType);
-			record.Sell = atof(CW2A(dlg.m_SellCount));
-			record.Unit = pGoods->nUnit;
-			record.Purchaseingprice = pGoods->Purchaseprice;
-			record.Sellingprice = pGoods->Sellingprice;
-			strcpy(record.szTime, CW2A(CTime::GetTickCount().Format(L"%H:%M:%S")));
-			strcpy(record.szComment, CW2A(dlg.m_Comment));
-			record.m_Rate = atof(CW2A(dlg.m_Rate));
+			if (dlg.DoModal() == IDOK)
+			{
+				//销售记录信息.
+				Record record = { 0 };
+				record.ID = pGoods->nID;
+				strcpy(record.szName, pGoods->szName);
+				strcpy(record.szType, pGoods->szType);
+				record.Sell = atof(CW2A(dlg.m_SellCount));
+				record.Unit = pGoods->nUnit;
+				record.Purchaseingprice = pGoods->Purchaseprice;
+				record.Sellingprice = pGoods->Sellingprice;
+				strcpy(record.szTime, CW2A(CTime::GetTickCount().Format(L"%H:%M:%S")));
+				strcpy(record.szComment, CW2A(dlg.m_Comment));
+				record.m_Rate = atof(CW2A(dlg.m_Rate));
 
-			//添加销售记录.
-			ListContext*pSaleRecords = ((CMainFrame*)GetParent())->m_SaleDlg.m_pSaleRecords;
+				//添加销售记录.
+				ListContext*pSaleRecords = ((CMainFrame*)GetParent())->m_SaleDlg.m_pSaleRecords;
 
-			AddRecord(CW2A(CTime::GetTickCount().Format(L"%Y-%m-%d")), pSaleRecords, &record, "SaleRecords");
-			((CMainFrame*)GetParent())->m_SaleDlg.UpdateSaleRecordListView();
-			//
-			UpdateStockListView();
+				AddRecord(CW2A(CTime::GetTickCount().Format(L"%Y-%m-%d")), pSaleRecords, &record, "SaleRecords");
+				((CMainFrame*)GetParent())->m_SaleDlg.UpdateSaleRecordListView();
+				//
+				UpdateStockListView();
+			}
 		}
 	}
 }
 
-
+//进货
 void CStoreMgrDlg::OnOperation32777()
 {
 	POSITION pos = m_List.GetFirstSelectedItemPosition();
@@ -349,25 +351,27 @@ void CStoreMgrDlg::OnOperation32777()
 			Goods*pGoods = (Goods*)p;
 			//进货.
 			CPurcsDlg dlg(*pGoods);
-			dlg.DoModal();
-			////进货记录信息.
-			Record record = { 0 };
-			record.ID = pGoods->nID;
-			strcpy(record.szName, pGoods->szName);
-			strcpy(record.szType, pGoods->szType);
-			record.Sell = atof(CW2A(dlg.m_SellCount));		//进货时这个是进货量
-			record.Unit = pGoods->nUnit;
-			record.Purchaseingprice = pGoods->Purchaseprice;
-			record.Sellingprice = pGoods->Sellingprice;
-			strcpy(record.szTime, CW2A(CTime::GetTickCount().Format(L"%H:%M:%S")));
-			strcpy(record.szComment, CW2A(dlg.m_Comment));
-			////添加销售记录.
-			ListContext*pPurchaseRecord = ((CMainFrame*)GetParent())->m_PurchaseDlg.m_pPurchaseRecords;
+			if (IDOK == dlg.DoModal())
+			{
+				////进货记录信息.
+				Record record = { 0 };
+				record.ID = pGoods->nID;
+				strcpy(record.szName, pGoods->szName);
+				strcpy(record.szType, pGoods->szType);
+				record.Sell = atof(CW2A(dlg.m_SellCount));		//进货时这个是进货量
+				record.Unit = pGoods->nUnit;
+				record.Purchaseingprice = pGoods->Purchaseprice;
+				record.Sellingprice = pGoods->Sellingprice;
+				strcpy(record.szTime, CW2A(CTime::GetTickCount().Format(L"%H:%M:%S")));
+				strcpy(record.szComment, CW2A(dlg.m_Comment));
+				////添加销售记录.
+				ListContext*pPurchaseRecord = ((CMainFrame*)GetParent())->m_PurchaseDlg.m_pPurchaseRecords;
 
-			AddRecord(CW2A(CTime::GetTickCount().Format(L"%Y-%m-%d")), pPurchaseRecord, &record, "PurchaseRecords");
-			((CMainFrame*)GetParent())->m_PurchaseDlg.UpdatePurchaseRecordListView();
-			//
-			UpdateStockListView();
+				AddRecord(CW2A(CTime::GetTickCount().Format(L"%Y-%m-%d")), pPurchaseRecord, &record, "PurchaseRecords");
+				((CMainFrame*)GetParent())->m_PurchaseDlg.UpdatePurchaseRecordListView();
+				//
+				UpdateStockListView();
+			}
 		}
 	}
 	

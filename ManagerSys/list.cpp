@@ -41,6 +41,7 @@ void insertfront(pListContext plist, Node*pNewNode)
 
 	plist->Len++;
 }
+
 void delnode(pListContext plist, Node*pNode)
 {
 	if (plist->Len == 0)
@@ -84,16 +85,24 @@ void merge(pListContext plist1, pListContext plist2, cmpfunc cmp, int ascending)
 		//把pIt从链表里面摘下来
 		pIt->prev->next = pIt->next;
 		pIt->next->prev = pIt->prev;
+
 		Node*pInsertNode = pIt;
 		pIt = pIt->next;
+
 		plist2->Len--;
 		plist1->Len++;
+
 		//把pInsertNode入到适当的位置
 		int result = cmp(pInsertNode, pInsertPos);
 		int ok = ascending ? (result < 0) : (result>0);
 		while (pInsertPos != &(plist1->Head) && ok)
+		{
+			//下一个位置
 			pInsertPos = pInsertPos->next;
-
+			//
+			result = cmp(pInsertNode, pInsertPos);
+			ok = ascending ? (result < 0) : (result>0);
+		}
 		//把要插入的节点加到list1里面,放到pInsertPos前面
 		pInsertNode->next = pInsertPos;
 		pInsertNode->prev = pInsertPos->prev;
@@ -102,6 +111,9 @@ void merge(pListContext plist1, pListContext plist2, cmpfunc cmp, int ascending)
 		pInsertNode->prev->next = pInsertNode;
 		//下一次插入直接从这里开始就行,因为list2是有序链表
 		pInsertPos = pInsertNode;
+		//
+		//debug_print_list(plist1);
+		//debug_print_list(plist2);
 	}
 }
 
@@ -138,7 +150,23 @@ void swap(pListContext plist1, pListContext plist2)
 }
 
 #define MAX_BIN 16
+//STL list sort
 
+//排序原理:
+/*
+
+	loop:
+		从 list里面取出一个元素放到Templist内(一定是空链表)
+
+		遍历bins,把bins内的有序链表合并到Templist内,直到遇到空位置或者合并完所有
+
+		把Templist放到bins的空位置(最后一个或者遍历遇到的第一个空位置)
+
+		goto loop;
+
+	所有merge操作合并的都是有序链表.
+
+*/
 void sort(pListContext plist, cmpfunc cmp, int ascending)
 {
 	//alloc bins:
@@ -158,6 +186,7 @@ void sort(pListContext plist, cmpfunc cmp, int ascending)
 		{
 			merge(pTempList, Bin[i], cmp, ascending);
 		}
+		//遍历合并,
 		if (i<MAX_BIN)
 			swap(Bin[i], pTempList);
 		else

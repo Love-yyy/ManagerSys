@@ -2,6 +2,9 @@
 #define _SALE_RECORD_H
 #include "list.h"
 
+/*
+	该结构体用于保存某一天的日期以及当天的销售记录
+*/
 typedef struct
 {
 	Node node;
@@ -10,6 +13,10 @@ typedef struct
 	ListContext	*m_pRecordList;	//当天记录.
 }SaleRecords;
 
+
+/*
+	用于记录某一件已售商品的信息
+*/
 typedef struct
 {
 	Node node;
@@ -31,16 +38,35 @@ typedef struct
 	//
 }Record;
 
-
+/*
+	函数说明 : 该函数将某一天的销售记录写入到指定的文件中,pRecordList中保存某一天的销售记录
+	返回值   : 无返回值
+*/
 void WriteRecord(const char*szFileName, ListContext*pRecordList);
 
+/*
+	函数说明 : 该函数从指定的文件中读取某一天的销售记录,并将当天的销售信息保存在链表中,最后返回
+	返回值   : 包含某一天销售信息的链表
+*/
 ListContext* ReadRecord(const char*szFileName);
 
+/*
+	函数说明  : 该函数从已经加载的不同日期的销售记录中，找到指定日期的销售记录，并返回一个SaleRecord指针
+	返回值	 :SaleRecords指针,其中SaleRecords中的m_pRecordList为当天的销售信息
+*/
 SaleRecords*FindRecords(ListContext*pSaleRecords, const char*szDate);
 
-//获取某一天的记录.
+/*
+	函数说明  : 该函数从给定的pSaleRecords中，找到指定日期的销售记录，并返回一个SaleRecord指针
+	返回值	 : SaleRecords指针,其中SaleRecords中的m_pRecordList为当天的销售信息
+*/
 SaleRecords* GetRecord(const char*szDate, ListContext*pSaleRecords, const char*path);
 //添加某一天的销售记录.
+
+/*
+	该函数将某一条记录插入到指定日期的销售记录链表中.
+		szDate指明了日期,pRecord为要添加的记录,
+*/
 void AddRecord(const char*szDate, ListContext*pSaleRecords, Record*pRecord, const char*Path);
 
 int CompareByID2(Node*it, Node*target);

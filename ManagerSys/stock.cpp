@@ -43,6 +43,8 @@ void WriteStockData(const char*szFileName, ListContext*pStockList)
 }
 
 //从txt中导入记录,返回总记录条数和成功数量.
+//txt编码应该是gb2312 (ANSI)
+
 void ImportFromFile(ListContext*pStockList, const char*szFileName,int*pTotal,int*pSuccess)
 {
 	*pTotal = 0;
