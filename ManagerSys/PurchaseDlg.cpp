@@ -52,6 +52,7 @@ BEGIN_MESSAGE_MAP(CPurchaseDlg, CDialogEx)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_DATETIMEPICKER1, &CPurchaseDlg::OnDtnDatetimechangeDatetimepicker1)
 	ON_CBN_SELCHANGE(IDC_COMBO1, &CPurchaseDlg::OnCbnSelchangeCombo1)
 	ON_EN_CHANGE(IDC_EDIT1, &CPurchaseDlg::OnEnChangeEdit1)
+	ON_BN_CLICKED(IDC_BUTTON6, &CPurchaseDlg::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 
@@ -115,17 +116,15 @@ void CPurchaseDlg::OnBnClickedButton1()
 	while (pos)
 	{
 		int idx = m_PurchaseList.GetNextSelectedItem(pos);
-		//emmmmm将就一下,链表太慢了.
+		//删除指定记录
 		ListContext*pList = m_pCurRecord->m_pRecordList;
-		Record Target;
-		strcpy(Target.szTime, CW2A(m_PurchaseList.GetItemText(idx, 8)));
-
-		Record*pRecord = (Record*)search(pList, pList->Head.next, CompareByTime, &Target);
-		if (pRecord)
-		{
-			delnode(pList, (Node*)pRecord);
-		}
+		DeleteCurDateRecord(pList, CW2A(m_PurchaseList.GetItemText(idx, 8)));
 	}
+
+	//写到文件.
+	char szFileName[256];
+	sprintf(szFileName, "PurchaseRecords\\%s", m_pCurRecord->szDate);
+	WriteRecord(szFileName, m_pCurRecord->m_pRecordList);
 	//刷新显示.
 	UpdatePurchaseRecordListView();
 }
@@ -138,11 +137,12 @@ void CPurchaseDlg::OnBnClickedButton2()
 		return;
 	ListContext*pList = m_pCurRecord->m_pRecordList;
 	//删除当天的记录
-	while (pList->Head.next != &pList->Head)
-	{
-		//删除所有节点
-		delnode(pList, pList->Head.next);
-	}
+	DeleteCurDateAllRecord(pList);
+	//
+	//写到文件.
+	char szFileName[256];
+	sprintf(szFileName, "PurchaseRecords\\%s", m_pCurRecord->szDate);
+	WriteRecord(szFileName, m_pCurRecord->m_pRecordList);
 	//
 	UpdatePurchaseRecordListView();
 }
@@ -156,35 +156,7 @@ void CPurchaseDlg::OnBnClickedButton3()
 	{
 		unsigned int key = dlg.m_SortType >> 16;
 		unsigned int ascending = dlg.m_SortType & 0xffff;
-		switch (key)
-		{
-		case 0:
-			sort(m_pCurRecord->m_pRecordList, CompareByID2, ascending);
-			break;
-		case 1:
-			sort(m_pCurRecord->m_pRecordList, CompareByName2, ascending);
-			break;
-		case 2:
-			sort(m_pCurRecord->m_pRecordList, CompareByType2, ascending);
-			break;
-		case 3:
-			sort(m_pCurRecord->m_pRecordList, CompareBySellCount, ascending);
-			break;
-		case 4:
-			sort(m_pCurRecord->m_pRecordList, CompareByPurchasingprice, ascending);
-			break;
-		case 5:
-			sort(m_pCurRecord->m_pRecordList, CompareBySellingprice, ascending);
-			break;
-		case 6:
-			sort(m_pCurRecord->m_pRecordList, CompareByAmount, ascending);
-			break;
-		case 7:
-			sort(m_pCurRecord->m_pRecordList, CompareByTime, ascending);
-			break;
-		default:
-			return;
-		}
+		SortCurDatePurchaseRecord(m_pCurRecord->m_pRecordList, key, ascending);
 		UpdatePurchaseRecordListView();
 	}
 }
@@ -254,11 +226,14 @@ void CPurchaseDlg::InsertRecord(Record&record)
 bool CPurchaseDlg::Filter(Record&record)
 {
 	CString Text;
+	unsigned int ID = 0;
+	if (m_Filter.GetLength() == 0)
+		return false;;
 	switch (m_FilterList.GetCurSel())
 	{
 	case 0:
-		Text.Format(L"%d", record.ID);
-		return 0 == wcsstr(Text, m_Filter);
+		ID = atoi(CW2A(m_Filter));
+		return ID!=record.ID;
 	case 1:
 		return 0 == strstr(record.szName, CW2A(m_Filter));
 	case 2:
@@ -280,4 +255,27 @@ void CPurchaseDlg::OnCbnSelchangeCombo1()
 void CPurchaseDlg::OnEnChangeEdit1()
 {
 	UpdatePurchaseRecordListView();
+}
+
+
+void CPurchaseDlg::OnBnClickedButton6()
+{
+	CFileDialog FileDlg(FALSE, L"*.txt", L"", NULL, L"文本文档(*.txt)|*.txt", this);
+
+	if (IDOK == FileDlg.DoModal())
+	{
+		if (ExportCurDatePurchaseReport(m_pCurRecord->m_pRecordList, m_pCurRecord->szDate, CW2A(FileDlg.GetPathName()).m_psz))
+		{
+			MessageBox(L"保存成功");
+		}
+		else
+		{
+			MessageBox(L"保存失败");
+		}
+	}
+}
+
+
+void CPurchaseDlg::OnOK()
+{
 }

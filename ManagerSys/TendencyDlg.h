@@ -36,6 +36,11 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
-	CComboBox m_GoodsList;
+//	CComboBox m_GoodsList;
+	bool CTendencyDlg::Filter(Goods&goods);
+
 	afx_msg void OnCbnSelchangeCombo1();
+	CComboBox m_FilterOpt;
+	CString m_sFilter;
+	afx_msg void OnEnChangeEdit1();
 };

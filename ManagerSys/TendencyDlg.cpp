@@ -13,6 +13,7 @@ IMPLEMENT_DYNAMIC(CTendencyDlg, CDialogEx)
 
 CTendencyDlg::CTendencyDlg(ListContext*pStockList, ListContext*pSaleRecords, CWnd* pParent /*=NULL*/)
 	: CDialogEx(CTendencyDlg::IDD, pParent)
+	, m_sFilter(_T(""))
 {
 	m_pStockList = pStockList;
 	m_pSaleRecords = pSaleRecords;
@@ -25,13 +26,16 @@ CTendencyDlg::~CTendencyDlg()
 void CTendencyDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_COMBO1, m_GoodsList);
+	//  DDX_Control(pDX, IDC_COMBO1, m_GoodsList);
+	DDX_Control(pDX, IDC_COMBO1, m_FilterOpt);
+	DDX_Text(pDX, IDC_EDIT1, m_sFilter);
 }
 
 
 BEGIN_MESSAGE_MAP(CTendencyDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_CBN_SELCHANGE(IDC_COMBO1, &CTendencyDlg::OnCbnSelchangeCombo1)
+	ON_EN_CHANGE(IDC_EDIT1, &CTendencyDlg::OnEnChangeEdit1)
 END_MESSAGE_MAP()
 
 
@@ -45,21 +49,11 @@ BOOL CTendencyDlg::OnInitDialog()
 	// TODO:  在此添加额外的初始化
 	
 	//
-	m_GoodsList.InsertString(m_GoodsList.GetCount(),L"全部");
-	m_GoodsList.SetItemData(0, (DWORD_PTR)0);
-	//添加ID到CommonBox中
-	for (Node*pNode = m_pStockList->Head.next; pNode != &m_pStockList->Head; pNode = pNode->next)
-	{
-		Goods*pGoods = (Goods*)pNode;
-		CString sItem;
-		sItem.Format(L"[%d]  %s", pGoods->nID, CA2W(pGoods->szName).m_szBuffer);
-		int idx = m_GoodsList.GetCount();
-		m_GoodsList.InsertString(idx, sItem);
-		m_GoodsList.SetItemData(idx,(DWORD_PTR)pGoods);
-	}
-	m_GoodsList.SetCurSel(0);
+	m_FilterOpt.AddString(L"编号");
+	m_FilterOpt.AddString(L"名称");
+	m_FilterOpt.AddString(L"品种");
 
-
+	m_FilterOpt.SetCurSel(0);
 	//绘制
 	CRect rect;
 	GetClientRect(rect);
@@ -76,7 +70,6 @@ BOOL CTendencyDlg::OnInitDialog()
 #define LIST_X_ORG 815
 #define LIST_Y_ORG 100
 
-#include <limits.h>
 
 double Arr[] = { 25, 50, 100, 250, 500, 1000, 2000,999999999 };
 static int getidx(double size)
@@ -90,6 +83,29 @@ static int getidx(double size)
 	return i;
 }
 
+bool CTendencyDlg::Filter(Goods&goods)
+{
+	//过滤器.
+	CString Text;
+	if (m_sFilter.GetLength() == 0)
+		return false;
+
+	unsigned int ID = 0;
+	switch (m_FilterOpt.GetCurSel())
+	{
+	case 0:													//编号
+		ID = atoi(CW2A(m_sFilter));
+		return ID != goods.nID;
+	case 1:													//名称
+		return 0 == strstr(goods.szName, CW2A(m_sFilter));
+	case 2:													//品种
+		return 0 == strstr(goods.szType, CW2A(m_sFilter));
+
+	default:
+		return false;
+	}
+}
+
 void CTendencyDlg::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
@@ -97,12 +113,8 @@ void CTendencyDlg::OnPaint()
 	font.CreateFontW(12, 6, 0, 0, FW_THIN, FALSE, FALSE, 0, DEFAULT_CHARSET, DEFAULT_CHARSET,
 		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SCRIPT, L"宋体");
 	dc.SelectObject(font);
-
-	// TODO:  在此处添加消息处理程序代码
-	// 不为绘图消息调用 CDialogEx::OnPaint()
-	//绘制坐标系.
-	//dc.SetBkColor();
-	//dc.SelectObject(GetStockObject(WHITE_PEN));
+	
+	//
 	m_DrawCount = 0;
 
 	dc.MoveTo(X_ORG,Y_ORG);
@@ -154,17 +166,16 @@ void CTendencyDlg::OnPaint()
 
 	dc.MoveTo(LIST_X_ORG - 10, LIST_Y_ORG - 18);
 	dc.LineTo(LIST_X_ORG - 10, LIST_Y_ORG - 18 + 800);
-	Goods*pGoods = (Goods*)m_GoodsList.GetItemData(m_GoodsList.GetCurSel());
-	if (pGoods)
-	{
-		Draw(&dc, pGoods, time);
-		return;
-	}
+
+	//绘制
 	for (Node*pNode = m_pStockList->Head.next; pNode != &m_pStockList->Head; pNode = pNode->next)
 	{
-		Draw(&dc, (Goods*)pNode, time);
+		Goods*pGoods = (Goods*)pNode;
+		if (!Filter(*pGoods))
+		{
+			Draw(&dc, pGoods, time);
+		}
 	}
-	//dc.LineTo()
 }
 
 void CTendencyDlg::Draw(CPaintDC*pDc,Goods*pGoods,CTime StartTime)
@@ -205,12 +216,7 @@ void CTendencyDlg::Draw(CPaintDC*pDc,Goods*pGoods,CTime StartTime)
 
 	double YUnit = 0;
 	double XUnit = 100;
-	
-	//if (average > 0)
-	//{
-	//	int yidx = getidx()
-	//	YUnit = ((Y_HEIGHT-40) / 2.0) / average;
-	//}
+
 	//遍历绘制
 	int x = XUnit;
 
@@ -241,7 +247,6 @@ void CTendencyDlg::Draw(CPaintDC*pDc,Goods*pGoods,CTime StartTime)
 		Text.Format(L"%.2lf", pRecord->Sell);
 		pDc->TextOutW(CurX - 10, CurY - 20, Text);
 
-
 		x += XUnit;
 	}
 
@@ -259,12 +264,21 @@ void CTendencyDlg::Draw(CPaintDC*pDc,Goods*pGoods,CTime StartTime)
 	//
 	m_DrawCount++;
 	return;
-	//GetRecord()
 }
 
 
 void CTendencyDlg::OnCbnSelchangeCombo1()
 {
+	UpdateData();
+	CRect rect;
+	GetClientRect(rect);
+	InvalidateRect(rect, 1);
+}
+
+
+void CTendencyDlg::OnEnChangeEdit1()
+{
+	UpdateData();
 	CRect rect;
 	GetClientRect(rect);
 	InvalidateRect(rect, 1);

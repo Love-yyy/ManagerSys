@@ -22,6 +22,7 @@ CLoginDlg::~CLoginDlg()
 {
 	//保存数据.
 	WriteUserData("user.dat", m_pUserData);
+	//释放链表数据.
 	dellist(m_pUserData);
 }
 
@@ -39,45 +40,23 @@ END_MESSAGE_MAP()
 
 
 // CLoginDlg 消息处理程序
-
-
 void CLoginDlg::OnBnClickedOk()
 {
-	Node*p = NULL;
-	//所有账号默认密码
-	char Password[128] = "123456789";
-
 	UpdateData();
 	if (m_User.GetLength() == 0 || m_Password.GetLength() == 0)
 	{
 		MessageBox(L"账号或密码为空",L"tips",MB_OK|MB_ICONASTERISK);
 		return;
 	}
-	//查找用户
-	
-	for (p = m_pUserData->Head.next; p != &m_pUserData->Head; p = p->next)
-	{
-		UserData*pUser = (UserData*)p;
-		if (strcmp(pUser->szUserName, CW2A(m_User).m_szBuffer) == 0)
-		{
-			strcpy(Password, pUser->szPassword);
-			break;
-		}
-	}
-	//没有找到用户
-	if (p == &m_pUserData->Head && m_User != L"admin")
+
+	UserData Target;
+	strcpy(Target.szPassword, CW2A(m_Password));
+	strcpy(Target.szUserName, CW2A(m_User));
+	//登录.
+	if (!Login(m_pUserData, &Target))
 	{
 		MessageBox(L"用户名或密码错误!", L"tips", MB_OK | MB_ICONASTERISK);
 		return;
 	}
-	//找到对应的用户或者是管理员账号.
-	if (strcmp(Password, CW2A(m_Password)))
-	{
-		MessageBox(L"用户名或密码错误!", L"tips", MB_OK | MB_ICONASTERISK);
-		return;
-	}
-	//登录成功
-
-
 	CDialogEx::OnOK();
 }

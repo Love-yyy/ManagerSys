@@ -22,7 +22,7 @@ BOOL CPurcsDlg::OnInitDialog()
 	GetDlgItem(IDC_EDIT10)->ShowWindow(SW_HIDE);
 	m_Discount.ShowWindow(SW_HIDE);
 	//
-	return TRUE;  // return TRUE unless you set the focus to a control
+	return FALSE;  // return TRUE unless you set the focus to a control
 	// 异常:  OCX 属性页应返回 FALSE
 }
 

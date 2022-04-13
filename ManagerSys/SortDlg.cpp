@@ -94,3 +94,8 @@ void CSortDlg::OnBnClickedOk()
 	m_SortType = m_KeyList.GetCurSel()<<16 | m_SortTypeList.GetCurSel();
 	CDialogEx::OnOK();
 }
+
+
+void CSortDlg::OnOK()
+{
+}

@@ -154,9 +154,12 @@ void swap(pListContext plist1, pListContext plist2)
 
 //排序原理:
 /*
+	准备一个Temp list
+	准备16个 bin.每个bin都是一个list
 
+开始排序:
 	loop:
-		从 list里面取出一个元素放到Templist内(一定是空链表)
+		从 待排序的 list里面取出一个元素放到Templist内 (TempList一定是空链表)
 
 		遍历bins,把bins内的有序链表合并到Templist内,直到遇到空位置或者合并完所有
 
@@ -164,9 +167,14 @@ void swap(pListContext plist1, pListContext plist2)
 
 		goto loop;
 
-	所有merge操作合并的都是有序链表.
+	待排序的list已经空了, 只剩下Bins里面的有序链表
+	
+	合并bins里面的有序链表到下一个
 
+	交换bins最后一个链表和待排序的list
+	排序完成
 */
+
 void sort(pListContext plist, cmpfunc cmp, int ascending)
 {
 	//alloc bins:
@@ -175,6 +183,7 @@ void sort(pListContext plist, cmpfunc cmp, int ascending)
 	{
 		Bin[i] = createlist();
 	}
+	//
 	pListContext pTempList = createlist();
 	while (plist->Len)
 	{
@@ -192,6 +201,7 @@ void sort(pListContext plist, cmpfunc cmp, int ascending)
 		else
 			swap(Bin[MAX_BIN - 1], pTempList);
 	}
+
 	//合并bin到最后一个
 	for (int i = 1; i<MAX_BIN; i++)
 	{

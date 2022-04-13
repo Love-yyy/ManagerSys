@@ -54,3 +54,20 @@ int Compare(Node*it, Node*Target)
 	//
 	return strcmp(pIt->szUserName, pTarget->szUserName);
 }
+
+//
+bool Login(ListContext*pUserList,UserData*pTarget)
+{
+	char szPassword[] = "123456789";
+	UserData*pUserData = (UserData*)search(pUserList, pUserList->Head.next, Compare, pTarget);
+	if (pUserData)
+	{
+		strcpy(szPassword, pUserData->szPassword);
+	}
+	//没有找到用户且不是管理员.
+	if (pUserData == NULL && strcmp(pTarget->szUserName, "admin"))
+	{
+		return false;
+	}
+	return (!strcmp(szPassword, pTarget->szPassword));
+}

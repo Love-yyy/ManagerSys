@@ -27,4 +27,5 @@ public:
 	CComboBox m_SortTypeList;
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedOk();
+	virtual void OnOK();
 };

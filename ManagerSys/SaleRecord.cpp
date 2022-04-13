@@ -80,8 +80,8 @@ SaleRecords* GetRecord(const char*szDate,ListContext*pSaleRecords,const char*pat
 	return pSaleRecord;
 }
 
-//添加记录
-void AddRecord(const char*szDate, ListContext*pSaleRecords,Record*pRecord,const char*Path)
+//添加销售和进货记录.记录
+void AddSaleRecord(const char*szDate, ListContext*pSaleRecords,Record*pRecord,const char*Path)
 {
 	//找到指定日期的销售记录链表
 	SaleRecords*pSaleRecord = GetRecord(szDate, pSaleRecords,Path);
@@ -91,6 +91,105 @@ void AddRecord(const char*szDate, ListContext*pSaleRecords,Record*pRecord,const 
 
 	//加入到链表末尾.
 	insertback(pSaleRecord->m_pRecordList, (Node*)pNewRecord);
+}
+
+//排序某一天的销售记录
+bool SortCurDateSaleRecord(ListContext*pRecordList, int key, int ascending)
+{
+	switch (key)
+	{
+	case 0:
+		sort(pRecordList, CompareByID2, ascending);
+		break;
+	case 1:
+		sort(pRecordList, CompareByName2, ascending);
+		break;
+	case 2:
+		sort(pRecordList, CompareByType2, ascending);
+		break;
+	case 3:
+		sort(pRecordList, CompareBySellCount, ascending);
+		break;
+	case 4:
+		sort(pRecordList, CompareByPurchasingprice, ascending);
+		break;
+	case 5:
+		sort(pRecordList, CompareBySellingprice, ascending);
+		break;
+	case 6:
+		sort(pRecordList, CompareByProfit, ascending);
+		break;
+	case 7:
+		sort(pRecordList, CompareByTime, ascending);
+		break;
+	default:
+		false;
+	}
+	return true;
+}
+//
+void DeleteCurDateRecord(ListContext*pRecordList, char* szTime)
+{
+	Record temp = { 0 };
+	strcpy(temp.szTime, szTime);
+
+	Node*pRecord = search(pRecordList, pRecordList->Head.next, CompareByTime, &temp);
+	if (pRecord)
+	{
+		delnode(pRecordList, pRecord);
+	}
+}
+
+void DeleteCurDateAllRecord(ListContext*pRecordList)
+{
+	//删除所有节点
+	while (pRecordList->Len > 0)
+	{
+		delnode(pRecordList,pRecordList->Head.next);
+	}
+	//不要删除链表
+}
+
+//输出报表.
+bool ExportCurDateReport(ListContext*pRecordList, const char*szCurDate,const char*szFileName)
+{
+	FILE*fp = fopen(szFileName, "w");
+	if (fp == NULL)
+		return false;
+	//
+	time_t t;
+	time(&t);							//UTC时间,返回时间戳.
+	tm*pLocalTime = localtime(&t);		//转换为当地时间
+	
+	for (int i = 0; i < 105; i++) fputc('*', fp);	fputc('\n', fp);
+	//
+	char szBuffer[256] = { 0 };
+	sprintf(szBuffer, "*\t\t\t\t\t文件说明:销售记录报表\t\t\t\t\t\t*\n");
+	fprintf(fp, szBuffer);
+
+	sprintf(szBuffer, "*\t\t\t\t\t记录日期:%s\t\t\t\t\t\t*\n",szCurDate);
+	fprintf(fp, szBuffer);
+
+	sprintf(szBuffer, "*\t\t\t\t\t生成日期:%d-%d-%d  %d:%d:%d\t\t\t\t\t*\n", pLocalTime->tm_year + 1900
+		, pLocalTime->tm_mon + 1, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
+	fprintf(fp, szBuffer);
+	for (int i = 0; i < 105; i++) fputc('*', fp); fputc('\n', fp);
+	////
+	fprintf(fp, "%-6s%-10s%-10s%-7s%-10s%-10s%-10s%-10s%-14s%-10s%s\n", "编号", "名称", "品种", "单位" ,"数量","进价", "售价","折扣","利润","时间","备注");
+	for (int i = 0; i < 105; i++) fputc('*', fp); fputc('\n', fp);
+	////输出内容.
+	for (Node*pNode = pRecordList->Head.next; pNode != &pRecordList->Head; pNode = pNode->next)
+	{
+		Record*pRecord = (Record*)pNode;
+
+		fprintf(fp, "%-6d%-10s%-10s%-7s%-10.2lf%-10.2lf%-10.2lf%-10.2lf%-14.2lf%-10s%s\n", pRecord->ID, pRecord->szName, pRecord->szType, pRecord->Unit ? "斤" : "个",
+			pRecord->Sell, pRecord->Purchaseingprice, pRecord->Sellingprice, pRecord->m_Rate,
+			pRecord->Sell*(pRecord->Sellingprice * pRecord->m_Rate - pRecord->Purchaseingprice),
+			pRecord->szTime,pRecord->szComment);
+	}
+	//
+	fclose(fp);
+	return true;
 }
 
 //比较 回调函数

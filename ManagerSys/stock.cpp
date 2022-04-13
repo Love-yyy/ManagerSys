@@ -85,6 +85,120 @@ void ImportFromFile(ListContext*pStockList, const char*szFileName,int*pTotal,int
 	}
 }
 
+//输出库存记录报表.
+bool ExportStockReport(ListContext*pStockList,const char*szFileName)
+{
+	FILE*fp = fopen(szFileName, "w");
+	if (fp == NULL)
+		return false;
+	//
+	time_t t;
+	time(&t);							//UTC时间,返回时间戳.
+	tm*pLocalTime = localtime(&t);		//转换为当地时间
+	//
+	for (int i = 0; i < 73; i++) fputc('*', fp);	fputc('\n', fp);
+	//
+	char szBuffer[256] = { 0 };
+	sprintf(szBuffer, "*\t\t\t文件说明:库存记录报表\t\t\t\t*\n");
+	fprintf(fp,szBuffer);
+
+	sprintf(szBuffer, "*\t\t\t生成时间:%d-%d-%d  %d:%d:%d\t\t\t*\n", pLocalTime->tm_year + 1900
+		,pLocalTime->tm_mon + 1,pLocalTime->tm_mday,pLocalTime->tm_hour,pLocalTime->tm_min,pLocalTime->tm_sec);
+	fprintf(fp, szBuffer);
+	for (int i = 0; i < 73; i++) fputc('*', fp);fputc('\n', fp);
+	//
+	fprintf(fp, "%-6s%-10s%-10s%-7s%-10s%-10s%-14s%-14s\n", "编号", "名称", "品种", "单位", "进价", "售价", "库存", "销量");
+	for (int i = 0; i < 73; i++) fputc('*', fp); fputc('\n', fp);
+	//输出内容.
+	for (Node*pNode = pStockList->Head.next; pNode != &pStockList->Head; pNode = pNode->next)
+	{
+		Goods*pGoods = (Goods*)pNode;
+
+		fprintf(fp, "%-6d%-10s%-10s%-7s%-10.2lf%-10.2lf%-14.2lf%-14.2lf\n", pGoods->nID, pGoods->szName, pGoods->szType, pGoods->nUnit?"斤":"个",
+			pGoods->Purchaseprice,pGoods->Sellingprice,pGoods->Stock,pGoods->Sell);
+	}
+	fclose(fp);
+	return true;
+}
+bool AddStockRecord(ListContext*pStockList, Goods*pGoods)
+{
+	//查找是否与现有商品冲突
+	Node*pExist = search(pStockList, pStockList->Head.next, CompareById, pGoods);
+	//
+	if (pExist)
+	{
+		return false;
+	}
+	//添加记录.
+	Goods*pNewGoods = (Goods*)malloc(sizeof(Goods));
+	memcpy(pNewGoods, pGoods, sizeof(Goods));
+	//
+	insertback(pStockList, (Node*)pNewGoods);
+
+	return true;
+}
+
+void DeleteStockRecord(ListContext*pStockList, int ID)
+{
+	Goods Temp;
+	Temp.nID = ID;
+	Goods*pTarget = (Goods*)search(pStockList, pStockList->Head.next, CompareById, &Temp);
+	if (pTarget)
+	{
+		delnode(pStockList, (Node*)pTarget);
+	}
+}
+
+bool ModifyStockInfo(ListContext* pStockList, int ID, Goods*pNewInfo)
+{
+	Goods Temp;
+	Temp.nID = ID;
+	Goods*pTarget = (Goods*)search(pStockList, pStockList->Head.next, CompareById, &Temp);
+	if (pTarget)
+	{
+		strcpy(pTarget->szName, pNewInfo->szName);
+		strcpy(pTarget->szType, pNewInfo->szType);
+		//
+		pTarget->nUnit = pNewInfo->nUnit;
+		pTarget->Sellingprice = pNewInfo->Sellingprice;
+		pTarget->Purchaseprice = pNewInfo->Purchaseprice;
+
+		return true;
+	}
+	return false;
+}
+
+//排序库存信息.
+bool SortStock(ListContext* pStockList, int key, int ascending)
+{
+	switch (key)
+	{
+	case 0:
+		sort(pStockList, CompareById, ascending);
+		break;
+	case 1:
+		sort(pStockList, CompareByName, ascending);
+		break;
+	case 2:
+		sort(pStockList, CompareByType, ascending);
+		break;
+	case 3:
+		sort(pStockList, CompareByPurchaseprice, ascending);
+		break;
+	case 4:
+		sort(pStockList, CompareBySellprice, ascending);
+		break;
+	case 5:
+		sort(pStockList, CompareByStock, ascending);
+		break;
+	case 6:
+		sort(pStockList, CompareBySell, ascending);
+		break;
+	default:
+		return false;
+	}
+	return true;
+}
 
 //typedef int(*cmpfunc)(Node* it, Node* target);
 

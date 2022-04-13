@@ -56,6 +56,7 @@ BEGIN_MESSAGE_MAP(CSaleRecordDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSaleRecordDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON3, &CSaleRecordDlg::OnBnClickedButton3)
 	ON_BN_CLICKED(IDC_BUTTON4, &CSaleRecordDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON6, &CSaleRecordDlg::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 
@@ -180,11 +181,15 @@ void CSaleRecordDlg::UpdateSaleRecordListView()
 bool CSaleRecordDlg::Filter(Record&record)
 {
 	CString Text;
+	unsigned int ID = 0;
+	if (m_Filter.GetLength() == 0)
+		return false;
+
 	switch (m_FilterList.GetCurSel())
 	{
 	case 0:
-		Text.Format(L"%d", record.ID);
-		return 0 == wcsstr(Text, m_Filter);
+		ID = atoi(CW2A(m_Filter));
+		return ID!=record.ID;
 	case 1:
 		return 0 == strstr(record.szName, CW2A(m_Filter));
 	case 2:
@@ -206,49 +211,50 @@ void CSaleRecordDlg::OnEnChangeEdit1()
 	UpdateSaleRecordListView();
 }
 
-
+//删除当天全部记录
 void CSaleRecordDlg::OnBnClickedButton2()
 {
 	if (IDYES != MessageBox(L"确定删除该天记录吗?(删除后不可恢复)", L"Warning", MB_YESNO | MB_ICONWARNING))
 		return;
 	ListContext*pList = m_pCurRecord->m_pRecordList;
+
 	//删除当天的记录
-	while (pList->Head.next != &pList->Head)
-	{
-		//删除所有节点
-		delnode(pList, pList->Head.next);
-	}
+	DeleteCurDateAllRecord(pList);
 	//
+	//写到文件.
+	char szFileName[256];
+	sprintf(szFileName, "SaleRecords\\%s", m_pCurRecord->szDate);
+	WriteRecord(szFileName, m_pCurRecord->m_pRecordList);
+
 	UpdateSaleRecordListView();
 }
 
-
+//删除记录
 void CSaleRecordDlg::OnBnClickedButton1()
 {
 	POSITION pos = m_SaleRecordList.GetFirstSelectedItemPosition();
-	if (pos == NULL || IDYES != MessageBox(L"确定要删除选中记录吗?(删除后不可恢复)", L"Warning", MB_YESNO | MB_ICONWARNING))
+	if (pos == NULL || IDYES != MessageBox(L"确定要删除选中记录吗?(删除后不可恢复)", L"Warning",
+		MB_YESNO | MB_ICONWARNING))
 		return;
 
 	while (pos)
 	{
-		int idx = m_SaleRecordList.GetNextSelectedItem(pos);
-		//emmmmm将就一下,链表太慢了.
-		ListContext*pList = m_pCurRecord->m_pRecordList;
-		Record Target;
-		strcpy(Target.szTime, CW2A(m_SaleRecordList.GetItemText(idx, 9)));
-
 		//
-		Record*pRecord = (Record*)search(pList, pList->Head.next, CompareByTime, &Target);
-		if (pRecord)
-		{
-			delnode(pList, (Node*)pRecord);
-		}
+		int idx = m_SaleRecordList.GetNextSelectedItem(pos);
+		
+		//删除该项.
+		ListContext*pList = m_pCurRecord->m_pRecordList;
+		DeleteCurDateRecord(pList, CW2A(m_SaleRecordList.GetItemText(idx, 9)));
 	}
+	//写到文件.
+	char szFileName[256];
+	sprintf(szFileName, "SaleRecords\\%s", m_pCurRecord->szDate);
+	WriteRecord(szFileName, m_pCurRecord->m_pRecordList);
 	//刷新显示.
 	UpdateSaleRecordListView();
 }
 
-
+//排序
 void CSaleRecordDlg::OnBnClickedButton3()
 {
 	CSortDlg dlg(1);
@@ -256,44 +262,31 @@ void CSaleRecordDlg::OnBnClickedButton3()
 	{
 		unsigned int key = dlg.m_SortType >> 16;
 		unsigned int ascending = dlg.m_SortType & 0xffff;
-		switch (key)
-		{
-		case 0:
-			sort(m_pCurRecord->m_pRecordList, CompareByID2,ascending);
-			break;
-		case 1:
-			sort(m_pCurRecord->m_pRecordList, CompareByName2, ascending);
-			break;
-		case 2:
-			sort(m_pCurRecord->m_pRecordList, CompareByType2, ascending);
-			break;
-		case 3:
-			sort(m_pCurRecord->m_pRecordList, CompareBySellCount, ascending);
-			break;
-		case 4:
-			sort(m_pCurRecord->m_pRecordList, CompareByPurchasingprice, ascending);
-			break;
-		case 5:
-			sort(m_pCurRecord->m_pRecordList, CompareBySellingprice, ascending);
-			break;
-		case 6:
-			sort(m_pCurRecord->m_pRecordList, CompareByProfit, ascending);
-			break;
-		case 7:
-			sort(m_pCurRecord->m_pRecordList, CompareByTime, ascending);
-			break;
-		default:
-			return;
-		}
+		
+		SortCurDateSaleRecord(m_pCurRecord->m_pRecordList, key, ascending);
 		UpdateSaleRecordListView();
 	}
 }
 
-
+//统计
 void CSaleRecordDlg::OnBnClickedButton4()
 {
 	CString Today = CA2W(m_pCurRecord->szDate).m_szBuffer;
 	CStatisticsDlg dlg(m_pCurRecord, Today);
 
 	dlg.DoModal();
+}
+
+//输出报表。
+void CSaleRecordDlg::OnBnClickedButton6()
+{
+	CFileDialog FileDlg(FALSE, L"*.txt", L"", NULL, L"文本文档(*.txt)|*.txt", this);
+
+	if (IDOK == FileDlg.DoModal())
+	{
+		if (ExportCurDateReport(m_pCurRecord->m_pRecordList, m_pCurRecord->szDate, CW2A(FileDlg.GetPathName()).m_psz))
+			MessageBox(L"保存成功");
+		else
+			MessageBox(L"保存失败");
+	}
 }

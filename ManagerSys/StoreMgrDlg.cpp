@@ -52,6 +52,7 @@ BEGIN_MESSAGE_MAP(CStoreMgrDlg, CDialogEx)
 	ON_COMMAND(ID_OPERATION_32777, &CStoreMgrDlg::OnOperation32777)
 	ON_BN_CLICKED(IDC_BUTTON4, &CStoreMgrDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON5, &CStoreMgrDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_BUTTON6, &CStoreMgrDlg::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 
@@ -106,11 +107,12 @@ BOOL CStoreMgrDlg::OnInitDialog()
 	//显示商品信息
 
 	UpdateStockListView();
+	//
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常:  OCX 属性页应返回 FALSE
 }
 
-
+//排序
 void CStoreMgrDlg::OnBnClickedButton3()
 {
 	// TODO:  在此添加控件通知处理程序代码
@@ -119,32 +121,7 @@ void CStoreMgrDlg::OnBnClickedButton3()
 	{
 		unsigned int key = dlg.m_SortType >> 16;
 		unsigned int ascending = dlg.m_SortType & 0xffff;
-		switch (key)
-		{
-		case 0:
-			sort(m_pStockList, CompareById, ascending);
-			break;
-		case 1:
-			sort(m_pStockList, CompareByName, ascending);
-			break;
-		case 2:
-			sort(m_pStockList, CompareByType, ascending);
-			break;
-		case 3:
-			sort(m_pStockList, CompareByPurchaseprice, ascending);
-			break;
-		case 4:
-			sort(m_pStockList, CompareBySellprice, ascending);
-			break;
-		case 5:
-			sort(m_pStockList, CompareByStock, ascending);
-			break;
-		case 6:
-			sort(m_pStockList, CompareBySell, ascending);
-			break;
-		default:
-			return;
-		}
+		SortStock(m_pStockList, key, ascending);
 		UpdateStockListView();
 	}
 }
@@ -164,7 +141,7 @@ void CStoreMgrDlg::OnNMRClickList1(NMHDR *pNMHDR, LRESULT *pResult)
 		pt.x, pt.y,this);
 }
 
-
+//增加记录.
 void CStoreMgrDlg::OnBnClickedButton1()
 {
 	Goods goods = { 0 };
@@ -173,19 +150,14 @@ void CStoreMgrDlg::OnBnClickedButton1()
 	CAddGoodsDlg dlg(goods);
 	if (IDOK == dlg.DoModal())
 	{
-		//查找是否与现有商品冲突
-		Node*pExist = search(m_pStockList, m_pStockList->Head.next, CompareById, (void*)&goods);
-		//
-		if (pExist)
+		if (!AddStockRecord(m_pStockList,&goods))
 		{
 			MessageBox(L"商品编号冲突", L"Error", MB_OK | MB_ICONASTERISK);
 			return;
 		}
-		//添加记录.
-		Goods*pNewGoods = (Goods*)malloc(sizeof(Goods));
-		memcpy(pNewGoods, &goods, sizeof(Goods));
-		//
-		insertback(m_pStockList, (Node*)pNewGoods);
+		//写到文件
+		WriteStockData("stock.dat", m_pStockList);
+		//添加到列表控件里.
 		InsertGoods(goods);
 	}
 }
@@ -197,11 +169,13 @@ bool CStoreMgrDlg::Filter(Goods&goods)
 	CString Text;
 	if (m_Filter.GetLength() == 0)
 		return false;
+
+	unsigned int ID;
 	switch (m_DropList.GetCurSel())
 	{
-	case 0:													//编号
-		Text.Format(L"%d",goods.nID);	
-		return 0 == wcsstr(Text, m_Filter);
+	case 0:		//编号
+		ID = atoi(CW2A(m_Filter));
+		return goods.nID != ID;
 	case 1:													//名称
 		return 0 == strstr(goods.szName, CW2A(m_Filter));
 	case 2:													//品种
@@ -267,20 +241,15 @@ void CStoreMgrDlg::OnBnClickedButton2()
 	}
 	while (pos)
 	{
-		//遍历选中项
+		//遍历列表控件中的选中项
 		int idx = m_List.GetNextSelectedItem(pos);
 		CString ID = m_List.GetItemText(idx, 0);
-		m_List.DeleteItem(idx);
-		//删除选中记录
-		Goods Target;
-		Target.nID = atoi(CW2A(ID));
-		//
-		Node*p = search(m_pStockList, m_pStockList->Head.next,CompareById,&Target);
-		if (p)
-		{
-			delnode(m_pStockList, p);
-		}
+		//删除链表中的记录.
+		DeleteStockRecord(m_pStockList, atoi(CW2A(ID)));
 	}
+	//写到文件
+	WriteStockData("stock.dat", m_pStockList);
+	UpdateStockListView();
 }
 
 
@@ -308,25 +277,37 @@ void CStoreMgrDlg::OnOperation32776()
 			CSellDlg dlg(*pGoods);
 			if (dlg.DoModal() == IDOK)
 			{
+				//写道文件
+				WriteStockData("stock.dat", m_pStockList);
 				//销售记录信息.
-				Record record = { 0 };
-				record.ID = pGoods->nID;
-				strcpy(record.szName, pGoods->szName);
-				strcpy(record.szType, pGoods->szType);
-				record.Sell = atof(CW2A(dlg.m_SellCount));
-				record.Unit = pGoods->nUnit;
-				record.Purchaseingprice = pGoods->Purchaseprice;
-				record.Sellingprice = pGoods->Sellingprice;
-				strcpy(record.szTime, CW2A(CTime::GetTickCount().Format(L"%H:%M:%S")));
-				strcpy(record.szComment, CW2A(dlg.m_Comment));
-				record.m_Rate = atof(CW2A(dlg.m_Rate));
+				Record*pRecord = (Record*)malloc(sizeof(Record));
+				pRecord->ID = pGoods->nID;
+				strcpy(pRecord->szName, pGoods->szName);
+				strcpy(pRecord->szType, pGoods->szType);
+				pRecord->Sell = atof(CW2A(dlg.m_SellCount));
+				pRecord->Unit = pGoods->nUnit;
+				pRecord->Purchaseingprice = pGoods->Purchaseprice;
+				pRecord->Sellingprice = pGoods->Sellingprice;
+				strcpy(pRecord->szTime, CW2A(CTime::GetTickCount().Format(L"%H:%M:%S")));
+				strcpy(pRecord->szComment, CW2A(dlg.m_Comment));
+				pRecord->m_Rate = atof(CW2A(dlg.m_Rate));
 
 				//添加销售记录.
+				char szDate[256];
+				strcpy(szDate, CW2A(CTime::GetTickCount().Format(L"%Y-%m-%d")));
 				ListContext*pSaleRecords = ((CMainFrame*)GetParent())->m_SaleDlg.m_pSaleRecords;
-
-				AddRecord(CW2A(CTime::GetTickCount().Format(L"%Y-%m-%d")), pSaleRecords, &record, "SaleRecords");
+				//获取当天的记录链表
+				SaleRecords*pRecordList = GetRecord(szDate, pSaleRecords, "SaleRecords");
+				//插入到链表.
+				insertback(pRecordList->m_pRecordList, (Node*)pRecord);
+				//刷新界面
 				((CMainFrame*)GetParent())->m_SaleDlg.UpdateSaleRecordListView();
-				//
+				
+				//写销售记录到文件
+				char szFileName[256];
+				sprintf(szFileName, "SaleRecords\\%s", szDate);
+
+				WriteRecord(szFileName, pRecordList->m_pRecordList);
 				UpdateStockListView();
 			}
 		}
@@ -353,23 +334,35 @@ void CStoreMgrDlg::OnOperation32777()
 			CPurcsDlg dlg(*pGoods);
 			if (IDOK == dlg.DoModal())
 			{
+				//写道文件
+				WriteStockData("stock.dat", m_pStockList);
 				////进货记录信息.
-				Record record = { 0 };
-				record.ID = pGoods->nID;
-				strcpy(record.szName, pGoods->szName);
-				strcpy(record.szType, pGoods->szType);
-				record.Sell = atof(CW2A(dlg.m_SellCount));		//进货时这个是进货量
-				record.Unit = pGoods->nUnit;
-				record.Purchaseingprice = pGoods->Purchaseprice;
-				record.Sellingprice = pGoods->Sellingprice;
-				strcpy(record.szTime, CW2A(CTime::GetTickCount().Format(L"%H:%M:%S")));
-				strcpy(record.szComment, CW2A(dlg.m_Comment));
-				////添加销售记录.
-				ListContext*pPurchaseRecord = ((CMainFrame*)GetParent())->m_PurchaseDlg.m_pPurchaseRecords;
+				Record*pRecord = (Record*)malloc(sizeof(Record));
 
-				AddRecord(CW2A(CTime::GetTickCount().Format(L"%Y-%m-%d")), pPurchaseRecord, &record, "PurchaseRecords");
-				((CMainFrame*)GetParent())->m_PurchaseDlg.UpdatePurchaseRecordListView();
+				pRecord->ID = pGoods->nID;
+				strcpy(pRecord->szName, pGoods->szName);
+				strcpy(pRecord->szType, pGoods->szType);
+				pRecord->Sell = atof(CW2A(dlg.m_SellCount));		//进货时这个是进货量
+				pRecord->Unit = pGoods->nUnit;
+				pRecord->Purchaseingprice = pGoods->Purchaseprice;
+				pRecord->Sellingprice = pGoods->Sellingprice;
+				strcpy(pRecord->szTime, CW2A(CTime::GetTickCount().Format(L"%H:%M:%S")));
+				strcpy(pRecord->szComment, CW2A(dlg.m_Comment));
+
+				////添加进货记录.
+				char szDate[256];
+				strcpy(szDate, CW2A(CTime::GetTickCount().Format(L"%Y-%m-%d")));
+				//获取当天记录链表
+				ListContext*pPurchaseRecord = ((CMainFrame*)GetParent())->m_PurchaseDlg.m_pPurchaseRecords;
+				SaleRecords* pRecordList =  GetRecord(szDate, pPurchaseRecord, "PurchaseRecords");
 				//
+				insertback(pRecordList->m_pRecordList, (Node*)pRecord);
+				//刷新界面
+				((CMainFrame*)GetParent())->m_PurchaseDlg.UpdatePurchaseRecordListView();
+				//写销售记录到文件
+				char szFileName[256];
+				sprintf(szFileName, "PurchaseRecords\\%s", szDate);
+				WriteRecord(szFileName, pRecordList->m_pRecordList);
 				UpdateStockListView();
 			}
 		}
@@ -377,26 +370,7 @@ void CStoreMgrDlg::OnOperation32777()
 	
 }
 
-
-void CStoreMgrDlg::OnBnClickedButton4()
-{
-	CFileDialog FileDlg(TRUE, L"*.txt", L"", NULL, L"文本文档(*.txt)|*.txt", this);
-
-	if (IDOK == FileDlg.DoModal())
-	{
-		int nTotal = 0, nSuccess = 0;
-		CString FileName = FileDlg.GetPathName();
-		ImportFromFile(m_pStockList, CW2A(FileName), &nTotal, &nSuccess);
-		//
-		CString Text;
-		Text.Format(L"读取完毕\r\n共找到:%d 条记录\r\n添加成功:%d 条记录\r\n", nTotal, nSuccess);
-		MessageBox(Text);
-		UpdateStockListView();
-	}
-
-}
-
-
+//修改记录.
 void CStoreMgrDlg::OnBnClickedButton5()
 {
 	//
@@ -406,7 +380,7 @@ void CStoreMgrDlg::OnBnClickedButton5()
 	//
 	int idx = m_List.GetNextSelectedItem(pos);
 	Goods goods = { 0 };
-
+	//获取控件上的数据
 	goods.nID = atoll(CW2A(m_List.GetItemText(idx, 0)));		//ID
 	strcpy(goods.szName, CW2A(m_List.GetItemText(idx, 1)));		//Name
 	strcpy(goods.szType, CW2A(m_List.GetItemText(idx, 2)));		//type
@@ -417,6 +391,13 @@ void CStoreMgrDlg::OnBnClickedButton5()
 	CChangeGoodsDlg dlg(goods);
 	if (IDOK == dlg.DoModal())
 	{
+		if (!ModifyStockInfo(m_pStockList, goods.nID, &goods))
+		{
+			MessageBox(L"修改失败", L"tips", MB_OK);
+			return;
+		}
+		//写到文件
+		WriteStockData("stock.dat", m_pStockList);
 		//修改控件上的显示
 		CString  Text;
 		m_List.SetItemText(idx, 1, CA2W(goods.szName));
@@ -437,18 +418,40 @@ void CStoreMgrDlg::OnBnClickedButton5()
 		Text.Format(L"%.2lf", goods.Sell);
 		m_List.SetItemText(idx, 7, Text);
 		//
-		//修改链表里面的数据
-		Node*pExist = search(m_pStockList, m_pStockList->Head.next, CompareById, (void*)&goods);
-		if (pExist)
-		{
-			Goods*pGoods = (Goods*)pExist;
-			strcpy(pGoods->szName, goods.szName);
-			strcpy(pGoods->szType, goods.szType);
-			//
-			pGoods->nUnit = goods.nUnit;
-			pGoods->Sellingprice = goods.Sellingprice;
-			pGoods->Purchaseprice = goods.Purchaseprice;
-		}
+		MessageBox(L"修改成功", L"tips", MB_OK);	
 	}
 }
 
+//从文件导入
+void CStoreMgrDlg::OnBnClickedButton4()
+{
+	CFileDialog FileDlg(TRUE, L"*.txt", L"", NULL, L"文本文档(*.txt)|*.txt", this);
+
+	if (IDOK == FileDlg.DoModal())
+	{
+		int nTotal = 0, nSuccess = 0;
+		CString FileName = FileDlg.GetPathName();
+		ImportFromFile(m_pStockList, CW2A(FileName), &nTotal, &nSuccess);
+		//
+		CString Text;
+		Text.Format(L"读取完毕\r\n共找到:%d 条记录\r\n添加成功:%d 条记录\r\n", nTotal, nSuccess);
+		MessageBox(Text);
+		UpdateStockListView();
+	}
+
+}
+//输出报表.
+void CStoreMgrDlg::OnBnClickedButton6()
+{
+	CFileDialog FileDlg(FALSE, L"*.txt", L"", NULL, L"文本文档(*.txt)|*.txt", this);
+
+	if (IDOK == FileDlg.DoModal())
+	{
+		if (ExportStockReport(m_pStockList, CW2A(FileDlg.GetPathName()).m_psz))
+		{
+			MessageBox(L"保存成功");
+		}
+		else
+			MessageBox(L"保存失败");
+	}
+}

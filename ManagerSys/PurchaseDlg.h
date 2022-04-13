@@ -42,4 +42,6 @@ public:
 	afx_msg void OnDtnDatetimechangeDatetimepicker1(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnCbnSelchangeCombo1();
 	afx_msg void OnEnChangeEdit1();
+	afx_msg void OnBnClickedButton6();
+	virtual void OnOK();
 };

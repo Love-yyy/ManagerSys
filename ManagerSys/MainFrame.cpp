@@ -16,9 +16,11 @@ CMainFrame::CMainFrame(CLoginDlg*pLoginDlg)
 
 CMainFrame::~CMainFrame()
 {
-	delete m_pLoginDlg;
-	m_pLoginDlg = NULL;
+	delete m_pLoginDlg;				//
+	m_pLoginDlg = NULL;				//
 }
+
+
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_CREATE()
 	ON_WM_TIMER()

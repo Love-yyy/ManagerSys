@@ -29,4 +29,7 @@ bool WriteUserData(const char*szFileName, ListContext*pList);
 	返回值	 :  若两个用户信息相同,则返回0,否则返回非0
 */
 int Compare(Node*it, Node*Target);
+
+//
+bool Login(ListContext*pUserList, UserData*pTarget);
 #endif
