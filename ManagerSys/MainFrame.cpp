@@ -134,6 +134,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_pForegroundWnd->ShowWindow(SW_SHOW);
 	//
 	SetTimer(10086, 1000,NULL);
+	//设置大小图标
+	HICON hIcon = LoadIcon(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
+	SetIcon(hIcon, TRUE);
+	SetIcon(hIcon, FALSE);
 	return 0;
 }
 

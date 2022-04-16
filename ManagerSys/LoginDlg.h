@@ -28,4 +28,5 @@ public:
 	CString m_User;
 	CString m_Password;
 	afx_msg void OnBnClickedOk();
+	virtual BOOL OnInitDialog();
 };

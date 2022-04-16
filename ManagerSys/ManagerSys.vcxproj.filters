@@ -212,5 +212,11 @@
     <Image Include="res\tendency.ico">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="res\icon9.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\icon.ico">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

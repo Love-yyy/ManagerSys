@@ -60,3 +60,16 @@ void CLoginDlg::OnBnClickedOk()
 	}
 	CDialogEx::OnOK();
 }
+
+
+BOOL CLoginDlg::OnInitDialog()
+{
+	CDialogEx::OnInitDialog();
+
+	// TODO:  在此添加额外的初始化
+	HICON hIcon = LoadIcon(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
+	SetIcon(hIcon, TRUE);
+	SetIcon(hIcon, FALSE);
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// 异常:  OCX 属性页应返回 FALSE
+}

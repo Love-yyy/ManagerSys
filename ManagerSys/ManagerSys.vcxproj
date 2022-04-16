@@ -157,10 +157,12 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\help.ico" />
+    <Image Include="res\icon.ico" />
     <Image Include="res\icon1.ico" />
     <Image Include="res\icon3.ico" />
     <Image Include="res\icon7.ico" />
     <Image Include="res\icon8.ico" />
+    <Image Include="res\icon9.ico" />
     <Image Include="res\Icon_15.ico" />
     <Image Include="res\Icon_16.ico" />
     <Image Include="res\ManagerSys.ico" />
