@@ -7,7 +7,9 @@ int CompareByAmount(Node*it, Node*target)
 	Record*pIt = (Record*)it;
 	Record*pTarget = (Record*)target;
 
-	return pIt->Sell*pIt->Purchaseingprice - pTarget->Sell*pTarget->Purchaseingprice;
+	int Result = pIt->Sell*pIt->Purchaseingprice >
+		pTarget->Sell*pTarget->Purchaseingprice ? 1:-1;
+	return Result;
 }
 
 //排序某一天的进货

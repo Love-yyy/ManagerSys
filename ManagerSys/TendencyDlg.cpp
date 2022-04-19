@@ -133,8 +133,6 @@ void CTendencyDlg::OnPaint()
 	dc.MoveTo(X_ORG + X_WIDTH, Y_ORG);
 	dc.LineTo(X_ORG + X_WIDTH - 5, Y_ORG - 5);
 	//
-	int nID = 11111;
-
 	dc.SetBkMode(TRANSPARENT);
 	//寻找最大值和最小值,确定单位长度.
 	CTime time = CTime::GetCurrentTime();
@@ -162,7 +160,7 @@ void CTendencyDlg::OnPaint()
 	time -= 7 * 24 * 3600;
 	//右侧列表
 	dc.MoveTo(LIST_X_ORG - 10, LIST_Y_ORG - 18);
-	dc.LineTo(LIST_X_ORG - 10 + 200, LIST_Y_ORG-18);
+	dc.LineTo(LIST_X_ORG - 10 + 400, LIST_Y_ORG-18);
 
 	dc.MoveTo(LIST_X_ORG - 10, LIST_Y_ORG - 18);
 	dc.LineTo(LIST_X_ORG - 10, LIST_Y_ORG - 18 + 800);
@@ -257,9 +255,12 @@ void CTendencyDlg::Draw(CPaintDC*pDc,Goods*pGoods,CTime StartTime)
 
 	pDc->SelectObject(GetStockObject(BLACK_PEN));
 	pDc->SetTextColor(0x0);
-
+	//
 	CString Text;
-	Text.Format(L"%s     单位:%s", CA2W(pGoods->szName).m_szBuffer, pGoods->nUnit ? L"斤" : L"个");
+	CString Name;
+	Name.Format(L"%s - %s", CA2W(pGoods->szName).m_psz, CA2W(pGoods->szType).m_psz);
+
+	Text.Format(L"%-13s 单位:%s", Name.GetBuffer() ,pGoods->nUnit ? L"斤" : L"个");
 	pDc->TextOutW(LIST_X_ORG + 36, LIST_Y_ORG + m_DrawCount * 25, Text);
 	//
 	m_DrawCount++;

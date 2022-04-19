@@ -14,6 +14,7 @@ typedef struct
 	char szName[64];		//名称
 	char szType[64];		//品种
 	unsigned int nUnit;		//销售单位.
+
 	double Purchaseprice;	//进价
 	double Sellingprice;	//售价
 	double Stock;			//库存

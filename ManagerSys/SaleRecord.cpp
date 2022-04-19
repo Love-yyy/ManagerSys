@@ -221,7 +221,9 @@ int CompareBySellCount(Node*it, Node*target)
 	Record*pIt = (Record*)it;
 	Record*pTarget = (Record*)target;
 
-	return pIt->Sell-pTarget->Sell;
+	int Result = pIt->Sell >
+		pTarget->Sell ? 1:-1;
+	return Result;
 }
 
 int CompareByPurchasingprice(Node*it, Node*target)
@@ -229,14 +231,18 @@ int CompareByPurchasingprice(Node*it, Node*target)
 	Record*pIt = (Record*)it;
 	Record*pTarget = (Record*)target;
 
-	return pIt->Purchaseingprice - pTarget->Purchaseingprice;
+	int Result = pIt->Purchaseingprice > 
+		pTarget->Purchaseingprice? 1: -1;
+	return Result;
 }
 int CompareBySellingprice(Node*it, Node*target)
 {
 	Record*pIt = (Record*)it;
 	Record*pTarget = (Record*)target;
 
-	return pIt->Sellingprice - pTarget->Sellingprice;
+	int Result = pIt->Sellingprice > 
+		pTarget->Sellingprice? 1:-1;
+	return Result;
 }
 
 int CompareByProfit(Node*it, Node*target)
@@ -244,7 +250,9 @@ int CompareByProfit(Node*it, Node*target)
 	Record*pIt = (Record*)it;
 	Record*pTarget = (Record*)target;
 
-	return  (pIt->Sellingprice - pIt->Purchaseingprice)*pIt->Sell - (pTarget->Sellingprice - pTarget->Purchaseingprice)*pTarget->Sell;
+	int Result  =  (pIt->Sellingprice - pIt->Purchaseingprice)*pIt->Sell >
+		(pTarget->Sellingprice - pTarget->Purchaseingprice)*pTarget->Sell ? 1:-1;
+	return Result;
 }
 
 int CompareByTime(Node*it, Node*target)

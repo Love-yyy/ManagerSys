@@ -229,24 +229,29 @@ int CompareByPurchaseprice(Node*it, Node*target)
 {
 	Goods*pGoods = (Goods*)it;
 	Goods*pTarget = (Goods*)target;
-	return pGoods->Purchaseprice - pTarget->Purchaseprice;
+	int Result = pGoods->Purchaseprice > pTarget->Purchaseprice ? 1 : -1;
+	return Result;
 }
 int CompareBySellprice(Node*it, Node*target)
 {
 	Goods*pGoods = (Goods*)it;
 	Goods*pTarget = (Goods*)target;
-	return pGoods->Sellingprice - pTarget->Sellingprice;
+
+	int Result = pGoods->Sellingprice > pTarget->Sellingprice ? 1 : -1;
+	return Result;
 }
 
 int CompareByStock(Node*it, Node*target)
 {
 	Goods*pGoods = (Goods*)it;
 	Goods*pTarget = (Goods*)target;
-	return pGoods->Stock - pTarget->Stock;
+	int Result = pGoods->Stock > pTarget->Stock ? 1 : -1;
+	return Result;
 }
 int CompareBySell(Node*it, Node*target)
 {
 	Goods*pGoods = (Goods*)it;
 	Goods*pTarget = (Goods*)target;
-	return pGoods->Sell - pTarget->Sell;
+	int Result = pGoods->Sell > pTarget->Sell ? 1 : -1;
+	return Result;
 }

@@ -58,7 +58,7 @@ int Compare(Node*it, Node*Target)
 //
 bool Login(ListContext*pUserList,UserData*pTarget)
 {
-	char szPassword[] = "123456789";
+	char szPassword[0x1000] = "123456789";
 	UserData*pUserData = (UserData*)search(pUserList, pUserList->Head.next, Compare, pTarget);
 	if (pUserData)
 	{
